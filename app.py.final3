@@ -17,7 +17,7 @@ if not os.path.exists(FILE):
 
 # ---------------- LOAD DATA ----------------
 df = pd.read_csv(FILE)
-df["PL"] = pd.to_numeric(df["PL"], errors="coerce").fillna(0)
+df["PL"] = pd.to_numeric(df["PL"], errors="coerce")
 
 # ---------------- SIDEBAR : ADD ENTRY ----------------
 st.sidebar.header("➕ Add Monthly P/L")
@@ -29,21 +29,11 @@ month = st.sidebar.selectbox(
 )
 pl_value = st.sidebar.number_input("Profit / Loss Amount", value=0)
 
-# ✅ UPDATE OR ADD LOGIC
 if st.sidebar.button("Save Entry"):
-
-    mask = (df["Year"] == year) & (df["Month"] == month)
-
-    if mask.any():
-        old_val = df.loc[mask, "PL"].values[0]
-        df.loc[mask, "PL"] = old_val + pl_value
-        st.sidebar.success("Amount Added To Existing Month!")
-    else:
-        new_row = pd.DataFrame([[year, month, pl_value]], columns=["Year","Month","PL"])
-        df = pd.concat([df, new_row], ignore_index=True)
-        st.sidebar.success("New Month Added Successfully!")
-
+    new_row = pd.DataFrame([[year, month, pl_value]], columns=["Year","Month","PL"])
+    df = pd.concat([df, new_row], ignore_index=True)
     df.to_csv(FILE, index=False)
+    st.sidebar.success("Saved Successfully!")
     st.rerun()
 
 # ---------------- SIDEBAR : DELETE ENTRY ----------------
