@@ -115,7 +115,23 @@ st.plotly_chart(fig_heat, use_container_width=True)
 
 # ---------------- TABLE ----------------
 st.subheader("Monthly Data")
-#st.dataframe(df, use_container_width=True)
+
+def color_pl(val):
+    if val > 0:
+        return "color: #00ff4c; font-weight: bold;"
+    elif val < 0:
+        return "color: #ff2b2b; font-weight: bold;"
+    else:
+        return ""
+
+styled_df = (
+    df.style
+      .applymap(color_pl, subset=["PL"])
+      .applymap(color_pl, subset=["Cumulative"])
+)
+
+st.dataframe(styled_df, use_container_width=True)
+
 styled_df = df.style.applymap(
     lambda v: "color: #00ff4c" if isinstance(v, (int,float)) and v > 0 else
               ("color: #ff2b2b" if isinstance(v, (int,float)) and v < 0 else ""),
