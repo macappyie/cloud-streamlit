@@ -111,8 +111,6 @@ fig_heat.update_layout(
 st.plotly_chart(fig_heat, use_container_width=True)
 
 # ---------------- TABLE ----------------
-
-# ---------------- TABLE ----------------
 st.subheader("Monthly Data")
 
 def color_pl(val):
@@ -125,25 +123,8 @@ def color_pl(val):
 
 styled_df = (
     df.style
-    .applymap(color_pl, subset=["PL"])
-    .applymap(color_pl, subset=["Cumulative"])
-    .set_table_styles([
-        {
-            "selector": "th",
-            "props": [
-                ("background-color", "#1f2937"),   # header bg
-                ("color", "white"),
-                ("font-weight", "bold"),
-                ("font-size", "14px")
-            ]
-        },
-        {
-            "selector": "td",
-            "props": [
-                ("background-color", "#0f172a")
-            ]
-        }
-    ])
+      .applymap(color_pl, subset=["PL"])
+      .applymap(color_pl, subset=["Cumulative"])
 )
 
 st.dataframe(styled_df, use_container_width=True)
