@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-
-
 # ---------------- CONFIG ----------------
 st.set_page_config(
     page_title="Professional Trading PnL Dashboard",
@@ -31,7 +29,6 @@ worst_delta = int(worst_year["PL"])
 st.markdown("## 🚀 Professional Trading PnL Dashboard")
 
 c1, c2, c3 = st.columns(3)
-
 c1.metric("Net P/L", f"{net_pl:,}")
 c2.metric("Best Year", int(best_year["Year"]), f"{best_delta:,}")
 c3.metric("Worst Year", int(worst_year["Year"]), f"{worst_delta:,}")
@@ -115,11 +112,19 @@ st.plotly_chart(fig_heat, use_container_width=True)
 
 # ---------------- TABLE ----------------
 st.subheader("Monthly Data")
-#st.dataframe(df, use_container_width=True)
-styled_df = df.style.applymap(
-    lambda v: "color: #00ff4c" if isinstance(v, (int,float)) and v > 0 else
-              ("color: #ff2b2b" if isinstance(v, (int,float)) and v < 0 else ""),
-    subset=["PL"]
+
+def color_pl(val):
+    if val > 0:
+        return "color:#00ff4c; font-weight:bold;"
+    elif val < 0:
+        return "color:#ff2b2b; font-weight:bold;"
+    else:
+        return ""
+
+styled_df = (
+    df.style
+      .applymap(color_pl, subset=["PL"])
+      .applymap(color_pl, subset=["Cumulative"])
 )
 
 st.dataframe(styled_df, use_container_width=True)
