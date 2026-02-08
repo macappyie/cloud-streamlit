@@ -2,6 +2,57 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+
+import streamlit as st
+
+# ---------- GLOBAL DARK BOLD THEME ----------
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+html, body, [class*="css"]  {
+    font-family: 'Inter', sans-serif;
+    color: #E6EDF3;
+    background-color: #0e1117;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 800 !important;
+    color: #ffffff !important;
+}
+
+p, span, div, label {
+    font-weight: 600 !important;
+    color: #c9d1d9 !important;
+}
+
+[data-testid="metric-container"] {
+    background: linear-gradient(145deg, #111827, #0b1220);
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 0 25px rgba(0,255,140,0.12);
+    border: 1px solid #1f2933;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 36px;
+    font-weight: 800;
+    color: #00ff99;
+}
+
+[data-testid="stMetricDelta"] {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #020617;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 # ---------------- CONFIG ----------------
 st.set_page_config(
     page_title="Professional Trading PnL Dashboard",
