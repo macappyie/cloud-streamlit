@@ -1,3 +1,4 @@
+  pnl_dashboard git:(main) cat app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -116,4 +117,3 @@ st.plotly_chart(fig_heat, use_container_width=True)
 # ---------------- TABLE ----------------
 st.subheader("Monthly Data")
 st.dataframe(df, use_container_width=True)
-
