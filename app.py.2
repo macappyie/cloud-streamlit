@@ -1,0 +1,84 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="Trading PnL Dashboard",
+    layout="wide"
+)
+
+# ---------------- DARK THEME CSS ----------------
+st.markdown("""
+<style>
+body {
+    background-color: #0e1117;
+    color: #fafafa;
+}
+[data-testid="stMetric"] {
+    background: #161b22;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,255,180,0.15);
+    transition: transform 0.3s ease;
+}
+[data-testid="stMetric"]:hover {
+    transform: scale(1.03);
+}
+h1, h2, h3 {
+    color: #58a6ff;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------- LOAD DATA ----------------
+df = pd.read_csv("pnl_data.csv")
+df["Cumulative"] = df["PL"].cumsum()
+yearly = df.groupby("Year")["PL"].sum().reset_index()
+
+total_pl = round(df["PL"].sum(), 2)
+best_year = yearly.loc[yearly["PL"].idxmax()]
+worst_year = yearly.loc[yearly["PL"].idxmin()]
+
+# ---------------- TITLE ----------------
+st.markdown("## 🚀 Professional Trading PnL Dashboard")
+
+# ---------------- KPI ----------------
+c1, c2, c3 = st.columns(3)
+
+c1.metric("Net P/L", total_pl)
+c2.metric("Best Year", int(best_year["Year"]), float(best_year["PL"]))
+c3.metric("Worst Year", int(worst_year["Year"]), float(worst_year["PL"]))
+
+st.divider()
+
+# ---------------- YEARLY BAR ----------------
+fig_bar = px.bar(
+    yearly, x="Year", y="PL",
+    title="Year-wise Profit / Loss",
+    template="plotly_dark"
+)
+st.plotly_chart(fig_bar, use_container_width=True)
+
+# ---------------- EQUITY CURVE ----------------
+fig_eq = px.line(
+    df, y="Cumulative",
+    title="Equity Curve",
+    template="plotly_dark"
+)
+st.plotly_chart(fig_eq, use_container_width=True)
+
+# ---------------- HEATMAP ----------------
+pivot = df.pivot_table(values="PL", index="Year", columns="Month")
+fig_heat = px.imshow(
+    pivot,
+    title="Monthly P/L Heatmap",
+    template="plotly_dark",
+    aspect="auto"
+)
+st.plotly_chart(fig_heat, use_container_width=True)
+
+# ---------------- TABLE ----------------
+st.subheader("Monthly P/L Data")
+st.dataframe(df)
+
