@@ -3,19 +3,6 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# ---------------- INDIAN NUMBER FORMAT ----------------
-def format_indian(num):
-    abs_num = abs(num)
-
-    if abs_num >= 10000000:
-        return f"{num/10000000:.2f} Cr"
-    elif abs_num >= 100000:
-        return f"{num/100000:.2f} Lakh"
-    elif abs_num >= 1000:
-        return f"{num/1000:.2f} K"
-    else:
-        return str(num)
-
 # ---------------- CONFIG ----------------
 st.set_page_config(
     page_title="Professional Trading PnL Dashboard",
@@ -42,6 +29,7 @@ month = st.sidebar.selectbox(
 )
 pl_value = st.sidebar.number_input("Profit / Loss Amount", value=0)
 
+# ✅ UPDATE OR ADD LOGIC
 if st.sidebar.button("Save Entry"):
 
     mask = (df["Year"] == year) & (df["Month"] == month)
@@ -93,9 +81,9 @@ worst_year = yearly.loc[yearly["PL"].idxmin()]
 st.markdown("## 🚀 Professional Trading PnL Dashboard")
 
 c1, c2, c3 = st.columns(3)
-c1.metric("Net P/L", format_indian(net_pl))
-c2.metric("Best Year", int(best_year["Year"]), format_indian(int(best_year["PL"])))
-c3.metric("Worst Year", int(worst_year["Year"]), format_indian(int(worst_year["PL"])))
+c1.metric("Net P/L", f"{net_pl:,}")
+c2.metric("Best Year", int(best_year["Year"]), f"{int(best_year['PL']):,}")
+c3.metric("Worst Year", int(worst_year["Year"]), f"{int(worst_year['PL']):,}")
 
 st.divider()
 
@@ -110,17 +98,12 @@ fig_year = px.bar(
     title="Yearly Profit / Loss",
     color_discrete_map={"Profit":"#00ff4c","Loss":"#ff2b2b"}
 )
-
-fig_year.update_layout(template="plotly_dark", yaxis_tickformat=",")
-fig_year.update_traces(
-    hovertemplate="Year: %{x}<br>P/L: %{y:,.0f}<extra></extra>"
-)
-
+fig_year.update_layout(template="plotly_dark")
 st.plotly_chart(fig_year, use_container_width=True)
 
 # ---------------- EQUITY CURVE ----------------
 fig_curve = px.line(df, y="Cumulative", title="Equity Curve")
-fig_curve.update_layout(template="plotly_dark", yaxis_tickformat=",")
+fig_curve.update_layout(template="plotly_dark")
 fig_curve.update_traces(line_color="#00ffe5")
 st.plotly_chart(fig_curve, use_container_width=True)
 
@@ -145,7 +128,7 @@ fig_heat = px.imshow(
 
 fig_heat.update_layout(template="plotly_dark")
 fig_heat.update_traces(
-    hovertemplate="Year: %{y}<br>Month: %{x}<br>P/L: %{z:,.0f}<extra></extra>",
+    hovertemplate="Year: %{y}<br>Month: %{x}<br>P/L: %{z}<extra></extra>",
     xgap=2,
     ygap=2
 )
@@ -168,3 +151,4 @@ styled = (
 )
 
 st.dataframe(styled, use_container_width=True)
+
