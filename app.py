@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
-from streamlit_plotly_events import plotly_events
 
 # ---------------- CONFIG ----------------
 st.set_page_config(
@@ -14,7 +13,7 @@ FILE = "pnl_data.csv"
 
 # ---------------- CREATE FILE IF NOT EXISTS ----------------
 if not os.path.exists(FILE):
-    pd.DataFrame(columns=["Year", "Month", "PL"]).to_csv(FILE, index=False)
+    pd.DataFrame(columns=["Year","Month","PL"]).to_csv(FILE, index=False)
 
 # ---------------- LOAD DATA ----------------
 df = pd.read_csv(FILE)
@@ -24,15 +23,13 @@ df["PL"] = pd.to_numeric(df["PL"], errors="coerce").fillna(0)
 st.sidebar.header("➕ Add Monthly P/L")
 
 year = st.sidebar.number_input("Year", min_value=2020, max_value=2100, value=2026)
-
 month = st.sidebar.selectbox(
     "Month",
     ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 )
-
 pl_value = st.sidebar.number_input("Profit / Loss Amount", value=0)
 
-# ---------------- SAVE ENTRY ----------------
+# ✅ UPDATE OR ADD LOGIC
 if st.sidebar.button("Save Entry"):
 
     mask = (df["Year"] == year) & (df["Month"] == month)
@@ -42,15 +39,14 @@ if st.sidebar.button("Save Entry"):
         df.loc[mask, "PL"] = old_val + pl_value
         st.sidebar.success("Amount Added To Existing Month!")
     else:
-        new_row = pd.DataFrame([[year, month, pl_value]],
-                               columns=["Year","Month","PL"])
+        new_row = pd.DataFrame([[year, month, pl_value]], columns=["Year","Month","PL"])
         df = pd.concat([df, new_row], ignore_index=True)
         st.sidebar.success("New Month Added Successfully!")
 
     df.to_csv(FILE, index=False)
     st.rerun()
 
-# ---------------- DELETE ENTRY ----------------
+# ---------------- SIDEBAR : DELETE ENTRY ----------------
 st.sidebar.divider()
 st.sidebar.header("🗑 Delete Entry")
 
@@ -69,13 +65,8 @@ if st.sidebar.button("Delete Selected Row"):
     st.rerun()
 
 # ---------------- SORT DATA ----------------
-month_order = ["Jan","Feb","Mar","Apr","May","Jun",
-               "Jul","Aug","Sep","Oct","Nov","Dec"]
-
-df["Month"] = pd.Categorical(df["Month"],
-                             categories=month_order,
-                             ordered=True)
-
+month_order = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+df["Month"] = pd.Categorical(df["Month"], categories=month_order, ordered=True)
 df = df.sort_values(["Year","Month"])
 
 # ---------------- CALCULATIONS ----------------
@@ -83,7 +74,6 @@ df["Cumulative"] = df["PL"].cumsum()
 net_pl = int(df["PL"].sum())
 
 yearly = df.groupby("Year")["PL"].sum().reset_index()
-
 best_year = yearly.loc[yearly["PL"].idxmax()]
 worst_year = yearly.loc[yearly["PL"].idxmin()]
 
@@ -97,54 +87,19 @@ c3.metric("Worst Year", int(worst_year["Year"]), f"{int(worst_year['PL']):,}")
 
 st.divider()
 
-# ---------------- YEARLY BAR (CLICKABLE) ----------------
-yearly["Type"] = yearly["PL"].apply(
-    lambda x: "Profit" if x > 0 else "Loss"
-)
+# ---------------- YEARLY BAR ----------------
+yearly["Type"] = yearly["PL"].apply(lambda x: "Profit" if x > 0 else "Loss")
 
 fig_year = px.bar(
     yearly,
     x="Year",
     y="PL",
     color="Type",
-    title="Yearly Profit / Loss (Click Any Bar)",
-    color_discrete_map={
-        "Profit": "#00ff4c",
-        "Loss": "#ff2b2b"
-    }
+    title="Yearly Profit / Loss",
+    color_discrete_map={"Profit":"#00ff4c","Loss":"#ff2b2b"}
 )
-
 fig_year.update_layout(template="plotly_dark")
-
-selected = plotly_events(fig_year, click_event=True)
 st.plotly_chart(fig_year, use_container_width=True)
-
-# ---------------- MONTHLY DRILLDOWN ----------------
-if selected:
-
-    selected_year = selected[0]["x"]
-    st.subheader(f"📅 Monthly P/L for {selected_year}")
-
-    monthly_df = df[df["Year"] == selected_year].copy()
-
-    monthly_df["Type"] = monthly_df["PL"].apply(
-        lambda x: "Profit" if x > 0 else "Loss"
-    )
-
-    fig_month = px.bar(
-        monthly_df,
-        x="Month",
-        y="PL",
-        color="Type",
-        title=f"{selected_year} Monthly Profit / Loss",
-        color_discrete_map={
-            "Profit": "#00ff4c",
-            "Loss": "#ff2b2b"
-        }
-    )
-
-    fig_month.update_layout(template="plotly_dark")
-    st.plotly_chart(fig_month, use_container_width=True)
 
 # ---------------- EQUITY CURVE ----------------
 fig_curve = px.line(df, y="Cumulative", title="Equity Curve")
@@ -155,7 +110,6 @@ st.plotly_chart(fig_curve, use_container_width=True)
 # ---------------- HEATMAP ----------------
 pivot = df.pivot_table(values="PL", index="Year", columns="Month")
 pivot = pivot.reindex(columns=month_order)
-
 max_val = abs(pivot.max().max())
 
 fig_heat = px.imshow(
@@ -173,13 +127,11 @@ fig_heat = px.imshow(
 )
 
 fig_heat.update_layout(template="plotly_dark")
-
 fig_heat.update_traces(
     hovertemplate="Year: %{y}<br>Month: %{x}<br>P/L: %{z}<extra></extra>",
     xgap=2,
     ygap=2
 )
-
 st.plotly_chart(fig_heat, use_container_width=True)
 
 # ---------------- TABLE ----------------
@@ -194,8 +146,9 @@ def color_pl(val):
 
 styled = (
     df.style
-      .applymap(color_pl, subset=["PL"])
-      .applymap(color_pl, subset=["Cumulative"])
+    .applymap(color_pl, subset=["PL"])
+    .applymap(color_pl, subset=["Cumulative"])
 )
 
 st.dataframe(styled, use_container_width=True)
+
